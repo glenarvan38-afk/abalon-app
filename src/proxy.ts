@@ -2,7 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(req: NextRequest) {
-  let res = NextResponse.next({ request: req });
+  const { pathname } = req.nextUrl;
+
+  // Pass the current pathname to Server Components via a request header.
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+
+  let res = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,7 +22,7 @@ export async function proxy(req: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             req.cookies.set(name, value)
           );
-          res = NextResponse.next({ request: req });
+          res = NextResponse.next({ request: { headers: requestHeaders } });
           cookiesToSet.forEach(({ name, value, options }) =>
             res.cookies.set(name, value, options)
           );
@@ -29,10 +35,18 @@ export async function proxy(req: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = req.nextUrl;
+  const next = encodeURIComponent(pathname);
 
   if (!user && pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/login", req.url));
+    return NextResponse.redirect(new URL(`/login?next=${next}`, req.url));
+  }
+
+  if (!user && pathname.startsWith("/account")) {
+    return NextResponse.redirect(new URL(`/login?next=${next}`, req.url));
+  }
+
+  if (!user && pathname.startsWith("/customer")) {
+    return NextResponse.redirect(new URL(`/login?next=${next}`, req.url));
   }
 
   if (user && pathname === "/login") {
@@ -43,5 +57,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/account/:path*", "/customer/:path*", "/login"],
 };
