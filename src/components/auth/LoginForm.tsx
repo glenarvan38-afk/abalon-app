@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { signIn, type AuthState } from "@/lib/auth/actions";
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(
     signIn,
     null
@@ -11,6 +11,8 @@ export function LoginForm() {
 
   return (
     <form action={action} className="space-y-4">
+      {next && <input type="hidden" name="next" value={next} />}
+
       <div className="space-y-1">
         <label htmlFor="email" className="block text-sm font-medium">
           Email
@@ -27,9 +29,17 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="password" className="block text-sm font-medium">
-          Password
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="block text-sm font-medium">
+            Password
+          </label>
+          <a
+            href="/reset-password"
+            className="text-sm text-gray-500 hover:text-black"
+          >
+            Forgot password?
+          </a>
+        </div>
         <input
           id="password"
           name="password"

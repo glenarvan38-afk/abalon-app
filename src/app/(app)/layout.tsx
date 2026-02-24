@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { Header } from "@/components/layout/Header";
 
@@ -13,7 +14,9 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    const headersList = await headers();
+    const pathname = headersList.get("x-pathname") ?? "/dashboard";
+    redirect(`/login?next=${encodeURIComponent(pathname)}`);
   }
 
   return (
