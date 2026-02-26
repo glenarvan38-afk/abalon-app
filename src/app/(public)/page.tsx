@@ -11,11 +11,11 @@ export default async function StartPage() {
 
   const customerHref = user
     ? "/customer/onboarding"
-    : "/login?next=/customer/onboarding";
+    : `/signup?role=customer&next=${encodeURIComponent("/customer/onboarding")}`;
 
   const contractorHref = user
     ? "/contractor/onboarding"
-    : "/login?next=/contractor/onboarding";
+    : `/signup?role=contractor&next=${encodeURIComponent("/contractor/onboarding")}`;
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">

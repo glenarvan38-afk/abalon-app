@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { signIn, type AuthState } from "@/lib/auth/actions";
 
 export function LoginForm({ next }: { next?: string }) {
@@ -64,6 +65,16 @@ export function LoginForm({ next }: { next?: string }) {
       >
         {pending ? "Signing in…" : "Sign in"}
       </button>
+
+      <p className="text-center text-sm text-gray-500">
+        Don&apos;t have an account?{" "}
+        <Link
+          href={next ? `/signup?next=${encodeURIComponent(next)}` : "/signup"}
+          className="text-gray-900 underline underline-offset-2"
+        >
+          Create account
+        </Link>
+      </p>
     </form>
   );
 }
