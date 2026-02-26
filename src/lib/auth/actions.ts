@@ -163,6 +163,83 @@ export async function signUp(
   return { success: "Check your email to confirm your account, then sign in." };
 }
 
+export async function createContractorProfile(
+  _prevState: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?next=/contractor/onboarding");
+  }
+
+  const companyName = (formData.get("company_name") as string)?.trim();
+  const contactName = (formData.get("contact_name") as string)?.trim();
+  const phone = (formData.get("phone") as string)?.trim();
+  const officeAddress = (formData.get("office_address") as string)?.trim();
+  const officeZip = (formData.get("office_zip") as string)?.trim();
+  const state = (formData.get("state") as string)?.trim() || "NC";
+  const serviceRadiusRaw = formData.get("service_radius_miles") as string;
+  const serviceRadius = parseInt(serviceRadiusRaw, 10);
+  const servicesRaw = (formData.get("services") as string)?.trim();
+  const licenseNumber =
+    (formData.get("license_number") as string)?.trim() || null;
+
+  if (!companyName) return { error: "Company name is required." };
+  if (!contactName) return { error: "Contact name is required." };
+  if (!phone) return { error: "Phone number is required." };
+  if (!officeAddress) return { error: "Office address is required." };
+  if (!officeZip || !/^\d{5}$/.test(officeZip)) {
+    return { error: "ZIP code must be exactly 5 digits." };
+  }
+  if (!serviceRadius || serviceRadius < 1 || serviceRadius > 500) {
+    return { error: "Service radius must be between 1 and 500 miles." };
+  }
+  if (!servicesRaw) return { error: "At least one service is required." };
+
+  const services = servicesRaw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (services.length === 0) return { error: "At least one service is required." };
+
+  const { error: insertError } = await supabase
+    .from("contractor_profiles")
+    .insert({
+      user_id: user.id,
+      company_name: companyName,
+      contact_name: contactName,
+      phone,
+      office_address: officeAddress,
+      office_zip: officeZip,
+      state,
+      service_radius_miles: serviceRadius,
+      services,
+      equipment: [],
+      license_number: licenseNumber,
+    });
+
+  if (insertError) {
+    if (process.env.NODE_ENV === "development") {
+      console.error("[createContractorProfile]", insertError);
+    }
+    if (insertError.code === "23505") {
+      return { error: "Contractor profile already exists." };
+    }
+    return { error: "Failed to create profile. Please try again." };
+  }
+
+  await supabase
+    .from("user_roles")
+    .upsert({ user_id: user.id, role: "contractor" }, { onConflict: "user_id,role" });
+
+  redirect("/dashboard");
+}
+
 export async function createCustomerProfile(
   _prevState: AuthState,
   formData: FormData

@@ -1,23 +1,35 @@
-import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getUserOrRedirect } from "@/lib/auth/guard";
+import { createClient } from "@/lib/supabase/server";
+import { ContractorOnboardingForm } from "@/components/contractor/ContractorOnboardingForm";
 
-export const metadata = { title: "Contractor onboarding — Abalon" };
+export const metadata = { title: "Contractor setup — Abalon" };
 
 export default async function ContractorOnboardingPage() {
-  await getUserOrRedirect("/contractor/onboarding");
+  const user = await getUserOrRedirect("/contractor/onboarding");
+
+  const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("contractor_profiles")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (existing) {
+    redirect("/dashboard");
+  }
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-      <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-        Contractor onboarding
-      </h1>
-      <p className="mt-2 text-gray-500">Coming next sprint.</p>
-      <Link
-        href="/dashboard"
-        className="mt-6 text-sm text-gray-900 underline underline-offset-2"
-      >
-        Go to dashboard
-      </Link>
+    <div className="max-w-md space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Set up your contractor profile
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Tell us about your business so we can match you with customers.
+        </p>
+      </div>
+      <ContractorOnboardingForm />
     </div>
   );
 }
