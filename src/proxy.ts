@@ -49,6 +49,10 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL(`/login?next=${next}`, req.url));
   }
 
+  if (!user && pathname.startsWith("/contractor")) {
+    return NextResponse.redirect(new URL(`/login?next=${next}`, req.url));
+  }
+
   if (user && pathname === "/login") {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
@@ -57,5 +61,5 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/account/:path*", "/customer/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/account/:path*", "/customer/:path*", "/contractor/:path*", "/login"],
 };
