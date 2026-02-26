@@ -10,7 +10,7 @@ export default async function DashboardPage() {
 
   // Gracefully handle tables not yet existing (migration not applied)
   const [rolesResult, cpResult, conpResult] = await Promise.all([
-    supabase.from("user_roles").select("role"),
+    supabase.from("user_roles").select("role").eq("user_id", user!.id),
     supabase.from("customer_profiles").select("user_id").maybeSingle(),
     supabase.from("contractor_profiles").select("user_id").maybeSingle(),
   ]);

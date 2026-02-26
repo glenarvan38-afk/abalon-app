@@ -126,7 +126,14 @@ export async function signUp(
     : null;
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://abalon.app";
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(next)}`,
+    },
+  });
 
   if (error) {
     return { error: formatAuthError(error.message) };
