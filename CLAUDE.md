@@ -1,6 +1,6 @@
 # Deployment Rules (CRITICAL)
 
-Always apply the stored EchoVault memory for project "abalon" when answering deployment-related questions.
+Always apply the stored EchoVault memory for project "abalon-app" when answering deployment-related questions.
 
 The following rules are mandatory:
 
@@ -11,3 +11,4 @@ The following rules are mandatory:
    - NEXT_PUBLIC_SUPABASE_ANON_KEY
 4. Never create new Vercel projects accidentally.
 5. Use only main project: abalon-app (not abalon-app-new).
+6. All EchoVault memories for this repo must use project: abalon-app. Do not use project: abalon.
